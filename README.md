@@ -1,74 +1,88 @@
 # Assignment-5_Embedded_System
-Lập trình GPIO và Giao tiếp UART (với Ngắt) trên STM32F1
-Dự án này là một ví dụ minh họa cách kết hợp hoạt động của GPIO và giao tiếp UART sử dụng ngắt trên vi điều khiển STM32F103, dùng thư viện Standard Peripheral Library (SPL).
 
-Chương trình cho phép vi điều khiển nhận lệnh văn bản (text command) từ một máy tính thông qua cổng nối tiếp để điều khiển trạng thái của một đèn LED. Toàn bộ quá trình nhận dữ liệu được xử lý bằng ngắt để tối ưu hóa hiệu năng.
+## Lập trình GPIO và Giao tiếp UART (sử dụng Ngắt) trên STM32F1
 
-Tính năng 📜
-Điều khiển GPIO: Cấu hình một chân GPIO ở chế độ xuất (Output Push-Pull) để điều khiển một đèn LED duy nhất.
+### 🧾 Giới thiệu
 
-Giao tiếp UART: Cấu hình và sử dụng USART1 để gửi và nhận dữ liệu nối tiếp với máy tính, hoạt động như một giao diện điều khiển.
+Dự án này minh họa cách kết hợp điều khiển **GPIO** và giao tiếp **UART với ngắt** trên vi điều khiển **STM32F103C8T6**, sử dụng thư viện **Standard Peripheral Library (SPL)**.
 
-Sử dụng Ngắt UART: Cấu hình ngắt USART_IT_RXNE (Receive Not Empty) để chương trình có thể phản ứng ngay lập tức mỗi khi có byte dữ liệu mới đến mà không cần phải kiểm tra liên tục trong vòng lặp chính (polling).
+Chương trình cho phép nhận lệnh điều khiển LED từ máy tính qua UART (ví dụ: `"ON"`, `"OFF"`), với việc xử lý dữ liệu hoàn toàn bằng **ngắt**, giúp tối ưu hóa hiệu năng và phản hồi tức thì.
 
-Xử lý Lệnh Văn bản: Xây dựng một bộ đệm (buffer) để lưu trữ các ký tự nhận được và xử lý chuỗi lệnh hoàn chỉnh (ví dụ: "ON", "OFF") khi nhận được ký tự xuống dòng.
+---
 
-Cấu hình phần cứng 🛠️
-Vi điều khiển: STM32F103C8T6 (Board Blue Pill hoặc tương tự).
+### 🎯 Tính năng chính
 
-Đèn LED:
+- **Điều khiển LED qua GPIO**: 
+  - Cấu hình chân **PA4** là Output Push-Pull để điều khiển một đèn LED.
 
-Nối với chân PA4.
+- **UART truyền nhận**:
+  - Sử dụng **USART1** ở chế độ **9600-8-N-1** để giao tiếp với máy tính.
 
-Giao tiếp Nối tiếp (với máy tính):
+- **Xử lý ngắt UART**:
+  - Dùng ngắt **USART_IT_RXNE** để nhận dữ liệu ngay khi có byte mới đến.
+  
+- **Xử lý lệnh văn bản**:
+  - Lưu lệnh nhận được vào bộ đệm.
+  - Khi nhận ký tự xuống dòng (`\n` hoặc `\r`), lệnh sẽ được xử lý.
+  - Hỗ trợ các lệnh: `"ON"` và `"OFF"` để bật/tắt LED.
 
-Nối chân PA9 (TX) của STM32 với chân RX của mạch chuyển USB-to-TTL.
+---
 
-Nối chân PA10 (RX) của STM32 với chân TX của mạch chuyển USB-to-TTL.
+### 🛠️ Cấu hình phần cứng
 
-Nối chân GND của hai board với nhau.
+| Thành phần         | STM32F103            | Ghi chú |
+|--------------------|----------------------|---------|
+| **LED**            | PA4                  | Output |
+| **UART TX**        | PA9                  | Kết nối đến RX của USB-to-TTL |
+| **UART RX**        | PA10                 | Kết nối đến TX của USB-to-TTL |
+| **Ground (GND)**   | GND                  | GND chung giữa STM32 và máy tính |
 
-Lưu ý: Cần một phần mềm terminal trên máy tính (như PuTTY, Tera Term) được cấu hình ở 9600 baud, 8 data bits, 1 stop bit, no parity.
+> 💡 **Yêu cầu phần mềm terminal** trên PC: PuTTY, Tera Term,...  
+> Cấu hình: **Baudrate: 9600**, **Data: 8 bit**, **Stop: 1**, **Parity: None**
 
-Cách hoạt động của code ⌨️
-Hàm led_Init():
-Kích hoạt xung clock cho GPIOA.
+---
 
-Cấu hình chân PA4 là GPIO_Mode_Out_PP (Output Push-Pull).
+### ⚙️ Nguyên lý hoạt động
 
-Thiết lập trạng thái ban đầu cho LED là TẮT bằng hàm GPIO_SetBits().
+#### `led_Init()`
+- Bật clock cho GPIOA.
+- Cấu hình **PA4** làm output.
+- Khởi tạo LED ở trạng thái **TẮT**.
 
-Hàm uart_Init():
-Kích hoạt xung clock cho GPIOA (cho các chân TX/RX) và USART1.
+#### `uart_Init()`
+- Cấu hình USART1 với:
+  - Baudrate: 9600
+  - Chế độ: Tx/Rx
+  - Ngắt **RXNE** được bật để xử lý dữ liệu đến.
+- Cấu hình ngắt **USART1_IRQn** trong NVIC.
 
-Cấu hình chân PA9 (TX) là GPIO_Mode_AF_PP (Alternate Function Push-Pull).
+#### `USART1_IRQHandler()`
+- Hàm ngắt USART được gọi khi có dữ liệu đến.
+- Nếu không phải ký tự kết thúc dòng, dữ liệu sẽ được lưu vào bộ đệm `vrc_Res`.
+- Nếu là ký tự kết thúc (`\r` hoặc `\n`):
+  - Kết thúc chuỗi bằng `\0`.
+  - Đặt cờ `vri_Stt = 1` để báo main xử lý.
 
-Cấu hình chân PA10 (RX) là GPIO_Mode_IN_FLOATING (Input Floating).
+#### `main()`
+- Khởi tạo UART và LED.
+- Gửi chuỗi `"Hello from STM32!\r\n"` khi bắt đầu.
+- Trong vòng lặp chính:
+  - Kiểm tra cờ `vri_Stt`.
+  - Nếu có lệnh mới, so sánh nội dung:
+    - `"ON"` → Bật LED.
+    - `"OFF"` → Tắt LED.
+  - Reset cờ và bộ đệm sau khi xử lý xong.
 
-Cấu hình các tham số cho USART1 bao gồm baud rate là 9600.
+---
 
-Kích hoạt ngắt USART_IT_RXNE để báo hiệu khi có dữ liệu được nhận.
+### 💻 Ví dụ hoạt động
 
-Kích hoạt và cài đặt độ ưu tiên cho trình phục vụ ngắt USART1_IRQn trong NVIC.
+1. Mở terminal, kết nối cổng COM (9600 baud).
+2. Nhập lệnh: `ON` → LED bật.
+3. Nhập lệnh: `OFF` → LED tắt.
+4. Quan sát phản hồi trên LED và terminal.
 
-Hàm main():
-Gọi các hàm cấu hình uart_Init() và led_Init().
+---
 
-Gửi một chuỗi chào mừng "Hello from STM32!\r\n" đến máy tính.
+### 📁 Cấu trúc file
 
-Vào một vòng lặp while(1) vô tận.
-
-Bên trong vòng lặp, chương trình chỉ kiểm tra biến cờ vri_Stt. Biến này hoạt động như một tín hiệu báo rằng trình phục vụ ngắt đã nhận xong một lệnh hoàn chỉnh.
-
-Khi vri_Stt được bật lên, main sẽ xử lý chuỗi lệnh lưu trong bộ đệm vrc_Res. Nó so sánh chuỗi này với "ON" hoặc "OFF" để điều khiển LED.
-
-Sau khi xử lý xong, nó xóa bộ đệm và reset cờ vri_Stt để chuẩn bị cho lệnh tiếp theo.
-
-Hàm USART1_IRQHandler() (Trình phục vụ ngắt):
-Hàm này sẽ tự động được gọi mỗi khi một byte dữ liệu được nhận vào thanh ghi của USART1.
-
-Đầu tiên, nó đọc byte dữ liệu vừa nhận.
-
-Nếu ký tự đó không phải là ký tự kết thúc (\r hoặc \n), nó sẽ được thêm vào bộ đệm vrc_Res.
-
-Nếu ký tự đó là ký tự kết thúc, nó sẽ đặt ký tự NULL (\0) vào cuối bộ đệm để tạo thành một chuỗi C hợp lệ và sau đó bật cờ vri_Stt = 1 để báo cho vòng lặp main() biết rằng một lệnh đã sẵn sàng.
