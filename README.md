@@ -1,31 +1,37 @@
 # Assignment-5_Embedded_System
-STM32F1 - Điều khiển LED qua UART
-Đây là một dự án cơ bản dành cho vi điều khiển STM32F10x, sử dụng thư viện Standard Peripheral Library (SPL) để điều khiển một đèn LED thông qua các lệnh gửi từ máy tính qua giao tiếp UART.
+Chắc chắn rồi! Dưới đây là phiên bản README đã được trình bày lại một cách chuyên nghiệp, rõ ràng và đẹp mắt hơn.
 
-Chức năng 💡
-Khởi tạo và cấu hình chân GPIO để điều khiển một đèn LED.
+#Hệ Thống Nhúng - Điều Khiển LED qua UART trên STM32F1
+Dự án này là một ví dụ cơ bản về cách điều khiển các thiết bị ngoại vi (GPIO) trên vi điều khiển STM32F10x thông qua giao tiếp UART. Người dùng có thể gửi các lệnh văn bản đơn giản từ máy tính để bật hoặc tắt một đèn LED được kết nối với board.
 
-Khởi tạo và cấu hình USART1 để giao tiếp nối tiếp (serial communication).
+Dự án được xây dựng bằng thư viện Standard Peripheral Library (SPL).
 
-Sử dụng cơ chế ngắt (interrupt) của USART để nhận dữ liệu một cách không đồng bộ.
+#Tính Năng Chính 💡
+Điều khiển LED: Bật/tắt một đèn LED kết nối với chân PA4 thông qua lệnh.
 
-Phân tích chuỗi lệnh nhận được để bật hoặc tắt đèn LED.
+Giao tiếp UART: Sử dụng USART1 để giao tiếp hai chiều với máy tính (Cấu hình: 9600 baud, 8 data bits, no parity, 1 stop bit).
 
-Gửi chuỗi "ON" để bật LED.
+Xử lý bằng ngắt (Interrupt): Nhận dữ liệu từ UART một cách hiệu quả bằng cơ chế ngắt, không làm gián đoạn luồng chính.
 
-Gửi chuỗi "OFF" để tắt LED.
+Phản hồi lệnh: Gửi thông báo trạng thái (batden / tatden) trở lại máy tính sau khi thực hiện lệnh.
 
-Gửi lại (echo) bất kỳ ký tự đơn nào nhận được.
+Chức năng Echo: Tự động gửi lại các ký tự đơn lẻ được nhập vào.
 
-Gửi phản hồi về máy tính sau khi thực hiện lệnh (batden hoặc tatden).
+#Phần Cứng Cần Thiết ⚙️
+Board phát triển: STM32F103C8T6 ("Blue Pill") hoặc tương đương.
 
-Yêu cầu phần cứng ⚙️
-Board phát triển STM32F1xx (ví dụ: STM32F103C8T6 "Blue Pill").
+Mạch giao tiếp: Mạch chuyển USB to TTL/Serial (ví dụ: CP2102, FT232).
 
-Mạch chuyển USB to TTL/Serial (ví dụ: PL2303, CP2102, FT232).
+Linh kiện:
 
-Một đèn LED và một điện trở hạn dòng (khoảng 220Ω - 330Ω).
+1 x Đèn LED (màu bất kỳ).
 
-Dây cắm (jumper wires).
+1 x Điện trở hạn dòng (khoảng 220Ω - 330Ω).
 
-Mạch nạp và gỡ lỗi ST-Link.
+Công cụ:
+
+Mạch nạp và gỡ lỗi ST-Link V2.
+
+Dây cắm breadboard (Jumper wires).
+
+
