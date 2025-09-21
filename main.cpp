@@ -112,3 +112,16 @@ void USART1_IRQHandler(void){
         vrc_Getc = UARTx_Getc(USART1);
 
         if(vrc_Getc == '\r' || vrc_Getc == '\n'){
+if(vri_Count > 0){         
+                vrc_Res[vri_Count] = '\0'; 
+                vri_Stt = 1;             
+                vri_Count = 0;          
+            }
+        } 
+        else { 
+            if(vri_Count < (MAX - 1)){ 
+                vrc_Res[vri_Count++] = vrc_Getc;
+            }
+        }
+    }
+}
